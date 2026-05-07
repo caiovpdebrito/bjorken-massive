@@ -44,7 +44,7 @@ double equilibrium_moments(int n,
 
 // General contributions 
 double A_coeff(int n, int l) { return -2.0*l*(2.0*l - 1.0)*(n + 2.0*l) / ((4.0*l + 1.0)*(4.0*l - 1.0)); }
-double B_coeff(int n, int l) { return -((2.0*l*(2.0*l + 1) + n*(24.0*l*l + 12.0*l - 3.0)) / (3.0*(4.0*l + 3.0)*(4.0*l - 1.0)) - 2.0/3.0); } 
+double B_coeff(int n, int l) { return -((2.0*l*(2.0*l + 1.0) + n*(24.0*l*l + 12.0*l - 3.0)) / (3.0*(4.0*l + 3.0)*(4.0*l - 1.0)) - 2.0/3.0); } 
 double C_coeff(int n, int l) { return -(n - 2.0*l - 1.0)*(2.0*l + 2.0)*(2.0*l + 1.0) / ( (4.0*l + 1.0)*(4.0*l + 3.0) ); }
 
 // Intrinsically massive constributions 
@@ -77,9 +77,11 @@ void rhs(double tau,
     double e0 = rho[idx(2, 0, lmax, nmin)]; // energy density
     double temperature = BickleyNaylor.T_Landau(mass, e0/n0); 
     double alpha = BickleyNaylor.alpha_Landau(mass/temperature, temperature, n0); 
+    double P0 = n0 * temperature; // classical ideal gas pressure
+    double s0 = (e0 + P0 - alpha * temperature * n0) / temperature;
 
-    // Compute relaxation time -- assume \tau_R = 5\eta_s/(\varepsilon_0 + P_0)
-    double tau_R = 5 * eta_over_s * (1 - alpha/4)/temperature; // shear relaxation time
+    // Compute relaxation time -- assume \tau_R = 5ŋ_s/(e0 + P0)
+    double tau_R = 5.0 * eta_over_s * s0 / (e0 + P0); // shear relaxation time
     
     for(int i = nmin; i <= nmax; ++i){
         for(int j = 0; j <= lmax; ++j){
