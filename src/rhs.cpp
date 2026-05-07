@@ -35,7 +35,6 @@ double equilibrium_moments(int n,
     // General expression 
     return std::exp(alpha)/(2*pi*pi)
            * std::pow(T,n+2)
-           * std::pow(z,n+2)
            * BickleyNaylor.kappa(n, z); 
 }
 
