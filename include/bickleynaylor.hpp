@@ -15,7 +15,7 @@ using constants::pi;
 double phi(double t);
 
 // Derivative of the mapping function
-double dphi(double t, double phi_t); 
+double dphi(double t); 
 
 // Integrand of the Bickley-Naylor function
 double integrand(int n, double x, double w);
