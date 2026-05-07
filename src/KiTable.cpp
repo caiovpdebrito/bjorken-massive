@@ -171,21 +171,22 @@ double KiTable::kappa(int n, double x) const
 double KiTable::k2_over_k1(double z) const
 {
     
-    for (size_t i = 0; i < x_values.size() - 1; i++)
-    {
-        if (z >= x_values[i] && z <= x_values[i+1])
-        {
-            double z0 = x_values[i];
-            double z1 = x_values[i+1];
+    // for (size_t i = 0; i < x_values.size() - 1; i++)
+    // {
+    //     if (z >= x_values[i] && z <= x_values[i+1])
+    //     {
+    //         double z0 = x_values[i];
+    //         double z1 = x_values[i+1];
 
-            double r0 = k2k1_ratio[i];
-            double r1 = k2k1_ratio[i+1];
+    //         double r0 = k2k1_ratio[i];
+    //         double r1 = k2k1_ratio[i+1];
 
-            double t = (z - z0)/(z1 - z0);
+    //         double t = (z - z0)/(z1 - z0);
 
-            return r0 + t*(r1 - r0);
-        }
-    }
+    //         return r0 + t*(r1 - r0);
+    //     }
+    // }
+    return kappa(2, z) / kappa(1, z);
 
     throw std::runtime_error("ERROR: value of z outside table.");
 }
