@@ -43,14 +43,14 @@ double equilibrium_moments(int n,
 //==========================================//
 
 // General contributions 
-double A_coeff(int n, int l) { return -2*l*(2*l-1)*(n+2*l) / ((4*l+1)*(4*l-1)); }
-double B_coeff(int n, int l) { return -((2*l*(2*l+1) + n*(24*l*l+12*l-3)) / (3*(4*l+3)*(4*l-1)) - 2/3); } // { return -(2*l*(2*l+1)*(2*n+3) - (n+2)) / ((4*l+3)*(4*l-1)); }
-double C_coeff(int n, int l) { return -(n-2*l-1)*(2*l+2)*(2*l+1) / ( (4*l+1)*(4*l+3) ); }
+double A_coeff(int n, int l) { return -2.0*l*(2.0*l - 1.0)*(n + 2.0*l) / ((4.0*l + 1.0)*(4.0*l - 1.0)); }
+double B_coeff(int n, int l) { return -((2.0*l*(2.0*l + 1) + n*(24.0*l*l + 12.0*l - 3.0)) / (3.0*(4.0*l + 3.0)*(4.0*l - 1.0)) - 2.0/3.0); } 
+double C_coeff(int n, int l) { return -(n - 2.0*l - 1.0)*(2.0*l + 2.0)*(2.0*l + 1.0) / ( (4.0*l + 1.0)*(4.0*l + 3.0) ); }
 
 // Intrinsically massive constributions 
-double D_coeff(int n, int l) { return 4*l*(n-2*l-1)*((4*l+1) - 1) / ( 3*(4*l-1)*(4*l+3) ); }
-double E_coeff(int n, int l) { return -2*l*(2*l-1)*(n-2*l-1) / ( (4*l-1)*(4*l+1) ); }
-double F_coeff(int n, int l) { return 2*l*(2*l-1)*(2*n-1) / ( (4*l-1)*(4*l+1) ); }
+double D_coeff(int n, int l) { return 4.0*l*(n - 2.0*l - 1.0)*((4.0*l + 1.0) - 1.0) / ( 3.0*(4.0*l - 1.0)*(4.0*l + 3.0) ); }
+double E_coeff(int n, int l) { return -2.0*l*(2.0*l - 1.0)*(n - 2.0*l - 1.0) / ( (4.0*l - 1.0)*(4.0*l + 1.0) ); }
+double F_coeff(int n, int l) { return 2.0*l*(2.0*l - 1.0)*(2.0*n - 1.0) / ( (4.0*l - 1.0)*(4.0*l + 1.0) ); }
 
 //==========================================//
 //======== COMPUTE RHS OF THE ODEs =========//
