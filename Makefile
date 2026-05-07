@@ -46,4 +46,5 @@ plot:
 	python3 $(GRPH_DIR)/plot_moments.py $(l)
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) $(TABLE_TARGET)
+
