@@ -9,10 +9,10 @@
 using constants::pi;
 
 thermodynamics compute_thermo(double mass,
-                                      double eta_over_s,
-                                      double n0,
-                                      double e0,
-                                      const KiTable& ki_table)
+                              double eta_over_s,
+                              double n0,
+                              double e0,
+                              const KiTable& ki_table)
 {
     if (n0 <= 0.0)
         throw std::runtime_error("ERROR: particle density must be positive.");
@@ -23,15 +23,14 @@ thermodynamics compute_thermo(double mass,
     thermodynamics thermo;
 
     //==========================================//
-    //============= MASS(IVE) FLAG =============//
+    //======= LANDAU MATCHING CONDITIONS =======//
     //==========================================//
 
     // Massless gas
     if (mass < 1e-12)
     {
-        thermo.T = e0 / (4.0 * n0);
-        thermo.alpha = std::log((2.0 * pi * pi * n0)
-                                / (std::pow(thermo.T, 3) * factorial(3)));
+        thermo.T = e0 / (3.0 * n0);
+        thermo.alpha = std::log((pi * pi * n0) / (std::pow(thermo.T, 3)));
     }
     // Massive gas
     else
