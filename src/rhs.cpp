@@ -3,6 +3,7 @@
 #include "KiTable.hpp"
 #include "bickleynaylor.hpp"
 #include "constants.hpp"
+#include "thermodynamics.hpp"
 
 #include <iostream>
 #include <cmath>
@@ -30,7 +31,7 @@ double equilibrium_moments(int n,
     if(z < 1e-10)
         return std::exp(alpha)/(2*pi*pi)
                * std::pow(T,n+2)
-               * factorial(n+2);
+               * factorial(n+1);
 
     // General expression 
     return std::exp(alpha)/(2*pi*pi)
@@ -44,7 +45,7 @@ double equilibrium_moments(int n,
 
 // General contributions 
 double A_coeff(int n, int l) { return -2.0*l*(2.0*l - 1.0)*(n + 2.0*l) / ((4.0*l + 1.0)*(4.0*l - 1.0)); }
-double B_coeff(int n, int l) { return -((2.0*l*(2.0*l + 1.0) + n*(24.0*l*l + 12.0*l - 3.0)) / (3.0*(4.0*l + 3.0)*(4.0*l - 1.0)) - 2.0/3.0); } 
+double B_coeff(int n, int l) { return -((2.0*l*(2.0*l + 1.0) + n*(24.0*l*l + 12.0*l - 3.0)) / (3.0*(4.0*l + 3.0)*(4.0*l - 1.0)) + 2.0/3.0); } 
 double C_coeff(int n, int l) { return -(n - 2.0*l - 1.0)*(2.0*l + 2.0)*(2.0*l + 1.0) / ( (4.0*l + 1.0)*(4.0*l + 3.0) ); }
 
 // Intrinsically massive constributions 
@@ -75,14 +76,16 @@ void rhs(double tau,
     // Compute thermodynamic quantities within Landau matching conditions
     double n0 = rho[idx(1, 0, lmax, nmin)]; // particle density
     double e0 = rho[idx(2, 0, lmax, nmin)]; // energy density
-    double temperature = BickleyNaylor.T_Landau(mass, e0/n0); 
-    double alpha = BickleyNaylor.alpha_Landau(mass/temperature, temperature, n0); 
-    double P0 = n0 * temperature; // classical ideal gas pressure
-    double s0 = (e0 + P0 - alpha * temperature * n0) / temperature;
 
     // Compute relaxation time -- assume \tau_R = 5ŋ_s/(e0 + P0)
-    double tau_R = 5.0 * eta_over_s * s0 / (e0 + P0); // shear relaxation time
-    
+    thermodynamics thermo = compute_thermo(mass, eta_over_s, n0, e0, BickleyNaylor);
+
+    double temperature = thermo.T;
+    double alpha = thermo.alpha;
+
+    // Compute relaxation time -- assume \tau_R = 5ŋ_s/(e0 + P0)
+    double tau_R = thermo.tau_R; // shear relaxation time
+
     for(int i = nmin; i <= nmax; ++i){
         for(int j = 0; j <= lmax; ++j){
             int k = idx(i, j, lmax, nmin); // index of the flat vector 
@@ -107,7 +110,17 @@ void rhs(double tau,
             if(i - 4 >= nmin && j > 0) val += intpower(mass, 2) * F * rho[idx(i-4, j-1, lmax, nmin)];
 
             // Collision term (RTA) -- the equilibrium moments for n=1 and n=2 are zero (Landau matching conditions)
-            if(i !=1 && i!= 2 && j == 0) val -= (t / tau_R) * (rho[k] - equilibrium_moments(i, mass, temperature, alpha, BickleyNaylor));
+            if (j == 0)
+            {
+                if (i != 1 && i != 2) // matching implies that rho_{1,0} and rho_{2,0} are set to their equilibrium values -- no contribution in these cases
+                {
+                    val -= (t / tau_R) * (rho[k] - equilibrium_moments(i, mass, temperature, alpha, BickleyNaylor));
+                }
+            }
+            else // equilibrium moment is zero
+            {
+                val -= (t / tau_R) * rho[k];
+            }
 
             drhodtau[k] = val;
         }
