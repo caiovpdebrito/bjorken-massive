@@ -14,6 +14,7 @@ SOURCES := \
 	$(SRC_DIR)/rk4.cpp \
 	$(SRC_DIR)/KiTable.cpp \
 	$(SRC_DIR)/bickleynaylor.cpp \
+	$(SRC_DIR)/thermodynamics.cpp \
 	$(SRC_DIR)/utils.cpp
 
 TABLE_SOURCES := \
@@ -22,7 +23,7 @@ TABLE_SOURCES := \
 
 table_file ?= data/Ki_table.dat
 
-.PHONY: all run bickleynaylor plot clean
+.PHONY: all run table plot clean
 
 all: $(TARGET)
 
