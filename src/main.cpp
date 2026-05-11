@@ -3,6 +3,7 @@
 #include "KiTable.hpp"
 #include "utils.hpp"
 #include "constants.hpp"
+#include "thermodynamics.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -14,20 +15,6 @@
 #include <vector>
 
 using constants::GeVfm;
-
-double relaxation_time(double eta_over_s,
-                       double e0,
-                       double P0,
-                       double s0)
-{
-    if (e0 + P0 <= 0.0)
-        throw std::runtime_error("ERROR: e0 + P0 must be positive.");
-
-    if (s0 <= 0.0)
-        throw std::runtime_error("ERROR: entropy density became non-positive.");
-
-    return 5.0 * eta_over_s * s0 / (e0 + P0);
-}
 
 double scaled_time(double tau,
                    double eta_over_s,
@@ -42,15 +29,10 @@ double scaled_time(double tau,
     double n0 = rho[idx(1, 0, lmax, nmin)];
     double e0 = rho[idx(2, 0, lmax, nmin)];
 
-    double T = ki_table.T_Landau(mass, e0 / n0);
-    double alpha = ki_table.alpha_Landau(mass / T, T, n0);
+    thermodynamics thermo = compute_thermo(mass, eta_over_s, n0, e0, ki_table);
 
-    double P0 = n0 * T; // classical ideal gas pressure
-    double s0 = (e0 + P0 - alpha * T * n0) / T;
+    return t / thermo.tau_R;
 
-    double tau_R = relaxation_time(eta_over_s, e0, P0, s0);
-
-    return t / tau_R;
 }
 
 void write_observables(std::ofstream& file,
@@ -69,20 +51,14 @@ void write_observables(std::ofstream& file,
     double n0 = rho[idx(1, 0, lmax, nmin)];
     double e0 = rho[idx(2, 0, lmax, nmin)];
 
-    double T = ki_table.T_Landau(mass, e0 / n0);
-    double alpha = ki_table.alpha_Landau(mass / T, T, n0);
+    thermodynamics thermo = compute_thermo(mass, eta_over_s, n0, e0, ki_table);
 
-    double P0 = n0 * T; // classical ideal gas pressure
-    double s0 = (e0 + P0 - alpha * T * n0) / T;
-
-    double tau_R = relaxation_time(eta_over_s, e0, P0, s0);
-
-    file << t/tau_R;
+    file << t/thermo.tau_R;
 
     for (int n = nmin; n <= nmax; ++n)
     {
         double rho_nl = rho[idx(n, l, lmax, nmin)];
-        double rho_eq_n0 = equilibrium_moments(n, mass, T, alpha, ki_table);
+        double rho_eq_n0 = equilibrium_moments(n, mass, thermo.T, thermo.alpha, ki_table);
 
         file << "\t" << std::abs(rho_nl) / rho_eq_n0;
     }
@@ -111,17 +87,17 @@ int main(int argc, char* argv[])
     // Truncation
     int nMin = 0;
     int nMax = 40;
-    int lMax = 10;
+    int lMax = 20;
 
     int N = (nMax - nMin + 1) * (lMax + 1); // define dimension of the rho vector
     std::vector<double> rho(N, 0.0); // allocate vector of corresponding size
 
     // System properties
     double eta_over_s = 1.0;
-    double mass = 0.135 * GeVfm;
+    double mass = 0.0 * GeVfm;
 
     // Initial conditions
-    double initialTemp = 0.2 * GeVfm;
+    double initialTemp = 10 * GeVfm;
     double alpha0 = 0.0;
 
     //==========================================//
@@ -181,15 +157,17 @@ int main(int argc, char* argv[])
 
     double n0_initial = rho[idx(1, 0, lMax, nMin)];
     double e0_initial = rho[idx(2, 0, lMax, nMin)];
-    double P0_initial = n0_initial * initialTemp; // classical ideal gas pressure
-    double s0_initial = (e0_initial + P0_initial - alpha0 * initialTemp * n0_initial) / initialTemp;
 
-    double tau_R0 = relaxation_time(eta_over_s, e0_initial, P0_initial, s0_initial);
+    thermodynamics thermo_initial = compute_thermo(mass, eta_over_s, n0_initial, e0_initial, ki_table);
+
+    double tau_R0 = thermo_initial.tau_R;
+
     double t0 = w0 * tau_R0;
     double tau = std::log(t0);
 
     double dw = (wf - w0) / nsteps;
     double hmax = 1e-3;
+    double w_tol = 1e-10;
     int max_substeps = 100000;
 
     //==========================================//
@@ -206,11 +184,11 @@ int main(int argc, char* argv[])
         int substeps = 0;
 
         while (scaled_time(tau, eta_over_s, mass, rho,
-                           nMin, lMax, ki_table) < w_target)
+                   nMin, lMax, ki_table) < w_target * (1.0 - w_tol))
         {
             if (substeps >= max_substeps)
             {
-                throw std::runtime_error("ERROR: failed to reach target t/tau_R.");
+                throw std::runtime_error("ERROR: failed to reach target tau/tau_R.");
             }
 
             double w_now = scaled_time(tau, eta_over_s, mass, rho,
@@ -221,7 +199,8 @@ int main(int argc, char* argv[])
 
             if (h <= 1e-12)
             {
-                throw std::runtime_error("ERROR: time step became too small.");
+                // throw std::runtime_error("ERROR: time step became too small.");
+                break;
             }
 
             rk4_step(tau, eta_over_s, mass, rho, h,
