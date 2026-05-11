@@ -21,9 +21,17 @@ TABLE_SOURCES := \
 	$(SRC_DIR)/generate_Ki_table.cpp \
 	$(SRC_DIR)/bickleynaylor.cpp
 
-table_file ?= data/Ki_table.dat
+.PHONY: help all run table plot clean
 
-.PHONY: all run table plot clean
+.PHONY: help
+
+help:
+	@echo "Available targets:"
+	@echo "  build   Build the project"
+	@echo "  run     Execute ODEs solver"
+	@echo "  table   Generate table of Bickley-Naylor functions"
+	@echo "  plot    Create plots with matplotlib"
+	@echo "  clean   Remove generated files"
 
 all: $(TARGET)
 
@@ -33,18 +41,34 @@ $(TARGET): $(SOURCES)
 $(TABLE_TARGET): $(TABLE_SOURCES)
 	$(CXX) $(CXXFLAGS) -I$(INC_DIR) $(TABLE_SOURCES) -o $(TABLE_TARGET)
 
-#run: $(TARGET)
-#	./$(TARGET) $(l) $(t0) $(tf) $(n)
+#==========================================#
+#=========== EXECUTE ODE SOLVER ===========#
+#==========================================#
 
 run: $(TARGET)
 	./$(TARGET) $(l) $(w0) $(wf) $(n)
+
+#==========================================#
+#======== GENERATE TABLE OF ĸ_n(z) ========#
+#==========================================#
+
+table_file ?= data/Ki_table.dat
+npoints ?= 1000
 
 table: $(TABLE_TARGET)
 	mkdir -p data
 	./$(TABLE_TARGET) $(nmin) $(nmax) $(xmin) $(xmax) $(npoints) $(table_file)
 
+#==========================================#
+#============== PLOT MOMENTS ==============#
+#==========================================#
+
 plot:
 	python3 $(GRPH_DIR)/plot_moments.py $(l)
+
+#==========================================#
+#========== REMOVE CREATED FILES ==========#
+#==========================================#
 
 clean:
 	rm -f $(TARGET) $(TABLE_TARGET)
