@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <iostream>
 
 using constants::pi;
 
@@ -40,15 +41,42 @@ thermodynamics compute_thermo(double mass,
     }
 
     thermo.P0 = n0 * thermo.T; // classical ideal gas pressure
-    thermo.s0 = (e0 + thermo.P0 - thermo.alpha * thermo.T * n0) / thermo.T;
 
     if (e0 + thermo.P0 <= 0.0)
         throw std::runtime_error("ERROR: e0 + P0 must be positive.");
 
-    if (thermo.s0 <= 0.0)
+    thermo.s0 = (e0 + thermo.P0 - thermo.alpha * thermo.T * n0) / thermo.T;
+
+    double alpha_bound = (e0 + thermo.P0) / (thermo.T * n0);
+
+    if (!std::isfinite(thermo.s0) || thermo.s0 <= 0.0)
+    {
+        std::cerr << "ERROR: entropy density became non-positive.\n"
+                << "m/T = " << mass / thermo.T << "\n"
+                << "T = " << thermo.T << "\n"
+                << "alpha = " << thermo.alpha << "\n"
+                << "alpha_bound = " << alpha_bound << "\n"
+                << "n0 = " << n0 << "\n"
+                << "e0 = " << e0 << "\n"
+                << "P0 = " << thermo.P0 << "\n"
+                << "s0 = " << thermo.s0 << "\n";
+
         throw std::runtime_error("ERROR: entropy density became non-positive.");
+    }
 
     thermo.tau_R = 5.0 * eta_over_s * thermo.s0 / (e0 + thermo.P0);
+
+
+    // thermo.P0 = n0 * thermo.T; // classical ideal gas pressure
+    // thermo.s0 = (e0 + thermo.P0 - thermo.alpha * thermo.T * n0) / thermo.T;
+
+    // if (e0 + thermo.P0 <= 0.0)
+    //     throw std::runtime_error("ERROR: e0 + P0 must be positive.");
+
+    // if (thermo.s0 <= 0.0)
+    //     throw std::runtime_error("ERROR: entropy density became non-positive.");
+
+    // thermo.tau_R = 5.0 * eta_over_s * thermo.s0 / (e0 + thermo.P0);
 
     return thermo;
 }
