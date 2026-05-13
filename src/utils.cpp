@@ -35,3 +35,32 @@ int idx(int n, int l, int lmax, int nmin)
 {
     return (n - nmin) * (lmax + 1) + l; 
 }
+
+// Legendre polynomials
+double legendre_P(int order, double x)
+{
+	// P_0 (x) = 1
+    if (order == 0)
+        return 1.0;
+
+	// P_1 (x) = x
+    if (order == 1)
+        return x;
+
+	// P_n (x) for n ≥ 2
+	// Using the recurrence relation: P_n(x) = [(2n - 1) x P_{n-1}(x) - (n - 1) P_{n-2}(x)] / n
+    
+	double P_n;			  // P_{n} (x)
+	double Pminus2 = 1.0; // P_{n-2} (x) -- starts as P_{0} (x) = 1
+    double Pminus1 = x;   // P_{n-1} (x) -- starts as P_{1} (x) = 1
+
+    for (int n = 2; n <= order; ++n)
+    {
+        P_n = ((2.0 * n - 1.0) * x * Pminus1 - (n - 1.0) * Pminus2) / n; // current P_n (x)
+
+		Pminus2 = Pminus1; // 
+        Pminus1 = P_n;  //
+    }
+
+    return P_n;
+}

@@ -14,3 +14,6 @@ double intpower(double v, int k);
 
 // Index mapping function
 int idx(int n, int l, int lmax, int nmin);
+
+// Legendre polynomials 
+double legendre_P(int order, double x);
