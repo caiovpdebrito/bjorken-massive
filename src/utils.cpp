@@ -49,17 +49,17 @@ double legendre_P(int order, double x)
 
 	// P_n (x) for n ≥ 2
 	// Using the recurrence relation: P_n(x) = [(2n - 1) x P_{n-1}(x) - (n - 1) P_{n-2}(x)] / n
-    
 	double P_n;			  // P_{n} (x)
-	double Pminus2 = 1.0; // P_{n-2} (x) -- starts as P_{0} (x) = 1
-    double Pminus1 = x;   // P_{n-1} (x) -- starts as P_{1} (x) = 1
+	double Pminus2 = 1.0; // P_{n-2} (x) -- starts as P_{0} (x) = 1.0
+    double Pminus1 = x;   // P_{n-1} (x) -- starts as P_{1} (x) = x
 
     for (int n = 2; n <= order; ++n)
     {
         P_n = ((2.0 * n - 1.0) * x * Pminus1 - (n - 1.0) * Pminus2) / n; // current P_n (x)
 
-		Pminus2 = Pminus1; // 
-        Pminus1 = P_n;  //
+        // Updates for next loop
+		Pminus2 = Pminus1; // P_{n-2} -> P_{n-1}
+        Pminus1 = P_n;     // P_{n-1} -> P_{n}
     }
 
     return P_n;
