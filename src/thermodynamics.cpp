@@ -66,17 +66,5 @@ thermodynamics compute_thermo(double mass,
 
     thermo.tau_R = 5.0 * eta_over_s * thermo.s0 / (e0 + thermo.P0);
 
-
-    // thermo.P0 = n0 * thermo.T; // classical ideal gas pressure
-    // thermo.s0 = (e0 + thermo.P0 - thermo.alpha * thermo.T * n0) / thermo.T;
-
-    // if (e0 + thermo.P0 <= 0.0)
-    //     throw std::runtime_error("ERROR: e0 + P0 must be positive.");
-
-    // if (thermo.s0 <= 0.0)
-    //     throw std::runtime_error("ERROR: entropy density became non-positive.");
-
-    // thermo.tau_R = 5.0 * eta_over_s * thermo.s0 / (e0 + thermo.P0);
-
     return thermo;
 }
